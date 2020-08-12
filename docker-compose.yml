@@ -14,8 +14,6 @@ services:
       - .:/app:cached
     tty: true
     stdin_open: true
-    environment:
-      - WEBPACKER_DEV_SERVER_HOST=webpacker
 
   db:
     image: postgres:11.7-alpine
