@@ -7,7 +7,7 @@ class Tender < ApplicationRecord
 
   FIELDS_TEMPLATE = '(fields ->> %<key>s = %<value>s)'
 
-  validates :url, presence: true
+  validates :url, presence: true, uniqueness: true
 
   scope :fields_eq, ->(key, value) do
     values = value.split(/[\s,]+/).reject(&:empty?)
