@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Tender < ApplicationRecord
+  include PgSearch::Model
+
   FILTER_KEYS = [
     'branch'
   ].freeze
@@ -9,7 +11,14 @@ class Tender < ApplicationRecord
 
   validates :url, presence: true, uniqueness: true
 
-  scope :fields_eq, ->(key, value) do
+  pg_search_scope :search_any_word, against: [
+    [:header, 'A'],
+    [:body, 'B']
+  ], using: {
+    tsearch: { any_word: true }
+  }
+
+  scope :fields_eq, lambda { |key, value|
     values = value.split(/[\s,]+/).reject(&:empty?)
     return all unless values.present?
 
@@ -21,10 +30,10 @@ class Tender < ApplicationRecord
     comparison_expression = values.map do |val|
       quoted_value = connection.quote(val.strip)
       format(FIELDS_TEMPLATE, key: quoted_key, value: quoted_value)
-    end.join(" OR ")
+    end.join(' OR ')
 
     where("fields ? #{quoted_key} AND (#{comparison_expression})")
-  end
+  }
 
   def add_field!(key, value)
     f = fields || {}
