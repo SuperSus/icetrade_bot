@@ -33,3 +33,8 @@ en:
   telegram_webhooks:
     start:
       hi: hey!
+    keyboard:
+      buttons:
+        settings: Settings
+        start_search: Start Search
+        stop_search: Stop Search
