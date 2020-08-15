@@ -3,8 +3,10 @@
 class Setting < ApplicationRecord
   belongs_to :user
 
-  def latest_filtered_tenders
-    Tender.last
+  def filtered_tenders
+    return Tender.all unless keywords.any?
+
+    Tender.search_any_word(keywords.join(' '))
   end
 
   def add_field!(key, value)

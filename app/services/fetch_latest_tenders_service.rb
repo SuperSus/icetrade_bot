@@ -38,6 +38,8 @@ class FetchLatestTendersService
 
     tender[:url] = url
     tender[:header] = table.css('.af.af-title td').last.text.squish
+    lots_descriptions = body.css('#lots_list td.wordBreak').text
+    tender[:body] = lots_descriptions
 
     fields = {}
     fields[:industry] = table.css('.af.af-industry td').last.text.squish
@@ -58,6 +60,7 @@ class FetchLatestTendersService
     @last_page_tenders_urls ||= page_body(BASE_URL).at_css('#auctions-list')
                                                    .css('tr a')
                                                    .map { |a| a.attr('href') }
+                                                   .reverse
   rescue StandardError => e
     []
   end
