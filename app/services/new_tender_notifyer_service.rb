@@ -5,7 +5,7 @@ class NewTenderNotifyerService
 
   def call
     Setting.includes(:user).find_each do |setting|
-      last_tenders = last_tenders(setting)
+      last_tenders = last_tenders(setting).load
       latest_tender_id = last_tenders.first.id
       next if latest_tender_id == setting.last_sended_tender_id
 
@@ -25,8 +25,8 @@ class NewTenderNotifyerService
     Telegram.bot.send_message(chat_id: chat_id, text: msg, parse_mode: 'Markdown')
   end
 
-  def prepare_msg(_tender)
-    'hey'
+  def prepare_msg(tender)
+    Message.new(tender: tender).to_s
   end
 
   # latest fetched tenders the first is newest
