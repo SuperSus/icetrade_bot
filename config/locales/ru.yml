@@ -32,4 +32,4 @@
 ru:
   telegram_webhooks:
     start:
-      hi: Привет!
+      hi: 'Привет %{name}!'
