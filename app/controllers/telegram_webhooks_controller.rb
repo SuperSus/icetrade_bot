@@ -21,6 +21,10 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     end
   end
 
+  def hhh!(*)
+    binding.pry
+  end
+
   def message(message); end
 
   def callback_query(action)
@@ -41,6 +45,21 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
     save_context nil
     respond_with :message, text: t('.', keywords: @user.setting.keywords)
+  end
+
+  def сhoose_industry(*params)
+    respond_with :message, text: 'llll', reply_markup: choose_industry_keyboard_markup
+  end
+
+  [1, 2].each do |id|
+    define_method("choose_industry_#{id}") do
+      session[:choose_industry_buttons_state] ||= {}
+      # toggle
+      session[:choose_industry_buttons_state][id] = !session[:choose_industry_buttons_state][id]
+
+      selected_ids = session[:choose_industry_buttons_state].select { |_id, value| value }.keys
+      edit_message :reply_markup, reply_markup: choose_industry_keyboard_markup(selected_ids)
+    end
   end
 
   private
@@ -65,6 +84,25 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       inline_keyboard: [
         [{ text: options[:change_keywords], callback_data: 'change_keywords' }],
         [{ text: options[:сhoose_industry], callback_data: 'сhoose_industry' }]
+      ]
+    }
+  end
+
+  def choose_industry_keyboard_markup(selected_ids = [])
+    industries = [{ id: 1, text: "blah1" }, { id: 2, text: "blah2" }]
+    industries_buttons = industries.to_a.map do |industry|
+      id, text = industry.values_at(:id, :text)
+      selected = selected_ids.include?(id)
+
+      [{ text: selected ? "#{text} v" : text, callback_data: "choose_industry_#{id}" }]
+    end
+
+    done_button = [{ text: 'done', callback_data: 'apply_industry' }]
+
+    {
+      inline_keyboard: [
+        *industries_buttons,
+        done_button
       ]
     }
   end
