@@ -9,7 +9,16 @@ class Setting < ApplicationRecord
     Tender.search_any_word(keywords.join(' '))
   end
 
-  def add_field!(key, value)
+  def industries
+    f = filters || {}
+    f['industries']
+  end
+
+  def add_industries!(industries)
+    add_filter!('industries', industries)
+  end
+
+  def add_filter!(key, value)
     f = filters || {}
     f[key] = value
     self.filters = f
