@@ -1,6 +1,52 @@
 class TelegramWebhooksController < Telegram::Bot::UpdatesController
   include Telegram::Bot::UpdatesController::MessageContext
 
+  INDUSTRIES = [
+    'Авиация',
+    'Аукционы',
+    'Банки',
+    'Безопасность',
+    'Бизнес / финансы / страхование',
+    'Ветеринария',
+    'Геодезия / картография',
+    'Геология / сейсмология',
+    'Горнорудная промышленность',
+    'Железная дорога',
+    'ЖКХ / бытовое обслуживание',
+    'Информационные технологии',
+    'Компьютеры / оборудование',
+    'Культура',
+    'Легкая промышленность',
+    'Лесное хозяйство / деревообрабатывающая промышленность',
+    'Маркетинг / реклама',
+    'Машиностроение',
+    'Медицина',
+    'Металлы / металлоизделия',
+    'Недвижимость',
+    'Образование / наука',
+    'Офис / дом',
+    'Перевозки / логистика / таможня',
+    'Полиграфическая / издательская деятельность',
+    'Продовольствие / пищевая промышленность',
+    'Проектирование',
+    'Связь / коммуникации',
+    'Сельское хозяйство',
+    'Строительство / архитектура',
+    'Сырье / материалы',
+    'Тарное хозяйство',
+    'Топливо / нефтехимия',
+    'Торговля',
+    'Транспорт',
+    'Туризм / отдых / спорт',
+    'Фармакология',
+    'Химия',
+    'Целлюлозно-бумажное производство',
+    'Экология',
+    'Электроника / бытовая техника',
+    'Электротехника',
+    'Энергетика'
+  ].freeze
+
   before_action :find_user
 
   def start!(*)
@@ -51,7 +97,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     respond_with :message, text: 'llll', reply_markup: choose_industry_keyboard_markup
   end
 
-  [1, 2].each do |id|
+  INDUSTRIES.each_with_index do |_indusry, id|
     define_method("choose_industry_#{id}") do
       session[:choose_industry_buttons_state] ||= {}
       # toggle
@@ -89,19 +135,21 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def choose_industry_keyboard_markup(selected_ids = [])
-    industries = [{ id: 1, text: "blah1" }, { id: 2, text: "blah2" }]
-    industries_buttons = industries.to_a.map do |industry|
-      id, text = industry.values_at(:id, :text)
+    industries_buttons = INDUSTRIES.each_with_index.map do |name, id|
       selected = selected_ids.include?(id)
 
-      [{ text: selected ? "#{text} v" : text, callback_data: "choose_industry_#{id}" }]
+      { text: selected ? "#{name} v" : name, callback_data: "choose_industry_#{id}" }
     end
+
+    industries_buttons_grid = industries_buttons
+                              .each_slice(2)
+                              .map { |buttons_group| buttons_group }
 
     done_button = [{ text: 'done', callback_data: 'apply_industry' }]
 
     {
       inline_keyboard: [
-        *industries_buttons,
+        *industries_buttons_grid,
         done_button
       ]
     }
