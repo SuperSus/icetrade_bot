@@ -99,13 +99,31 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   INDUSTRIES.each_with_index do |_indusry, id|
     define_method("choose_industry_#{id}") do
-      session[:choose_industry_buttons_state] ||= {}
+      # session[:choose_industry_buttons_state] = nil
+      db_selected_ids = @user.setting.industries
+                             .map { |industry| INDUSTRIES.index(industry) }
+                             .compact
+                             .map { |id| [id, true] }
+                             .to_h
+      session[:choose_industry_buttons_state] ||= db_selected_ids
       # toggle
       session[:choose_industry_buttons_state][id] = !session[:choose_industry_buttons_state][id]
 
       selected_ids = session[:choose_industry_buttons_state].select { |_id, value| value }.keys
       edit_message :reply_markup, reply_markup: choose_industry_keyboard_markup(selected_ids)
     end
+  end
+
+  def apply_industry
+    if session[:choose_industry_buttons_state]
+      selected_ids = session[:choose_industry_buttons_state].select { |_id, value| value }.keys
+      industries = INDUSTRIES.values_at(*selected_ids)
+
+      @user.setting.add_industries!(industries)
+      session[:choose_industry_buttons_state] = nil
+    end
+
+    respond_with :message, text: '/keyboard'
   end
 
   private
