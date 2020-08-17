@@ -51,19 +51,19 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def start!(*)
     user = User.find_or_create_by(chat_id: chat['id'], name: chat['username'])
-    respond_with :message, text: t('.hi', name: user.name || '')
+    respond_with :message, text: translation('start.hi', name: user.name || '')
   end
 
   def keyboard!(value = nil, *)
     if value
       if value == main_menu_buttons[:settings]
-        respond_with :message, text: t('.inline_keyboard.prompt'), reply_markup: update_settings_keyboard_markup
+        respond_with :message, text: translation('settings_inline_keyboard.prompt'), reply_markup: update_settings_keyboard_markup
       else
-        respond_with :message, text: t('.selected', value: value)
+        # respond_with :message, text: t('.selected', value: value)
       end
     else
       save_context :keyboard!
-      respond_with :message, text: t('.main_menu.prompt'), reply_markup: main_keyboard_markup
+      respond_with :message, text: translation('main_menu.prompt'), reply_markup: main_keyboard_markup
     end
   end
 
@@ -81,7 +81,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def change_keywords
     save_context :apply_keywords
-    respond_with :message, text: t('.change_keywords', keywords: @user.setting.keywords)
+    respond_with :message, text: translation('change_keywords', keywords: @user.setting.keywords)
   end
 
   def apply_keywords(*args)
@@ -90,11 +90,11 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     @user.save
 
     save_context nil
-    respond_with :message, text: t('.', keywords: @user.setting.keywords)
+    respond_with :message, text: translation('apply_keywords.done', keywords: @user.setting.keywords)
   end
 
   def сhoose_industry(*params)
-    respond_with :message, text: 'llll', reply_markup: choose_industry_keyboard_markup
+    respond_with :message, text: translation('choose_industry.prompt'), reply_markup: choose_industry_keyboard_markup
   end
 
   INDUSTRIES.each_with_index do |_indusry, id|
@@ -123,7 +123,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       session[:choose_industry_buttons_state] = nil
     end
 
-    respond_with :message, text: '/keyboard'
+    respond_with :message, text: translation('apply_industry.done'), reply_markup: main_keyboard_markup
   end
 
   private
@@ -143,7 +143,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def update_settings_keyboard_markup
-    options = t('.inline_keyboard.choose_options')
+    options = translation('settings_inline_keyboard.choose_options')
     {
       inline_keyboard: [
         [{ text: options[:change_keywords], callback_data: 'change_keywords' }],
@@ -156,14 +156,15 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     industries_buttons = INDUSTRIES.each_with_index.map do |name, id|
       selected = selected_ids.include?(id)
 
-      { text: selected ? "#{name} v" : name, callback_data: "choose_industry_#{id}" }
+      { text: selected ? "\xE2\x9C\x85 #{name}" : name, callback_data: "choose_industry_#{id}" }
     end
 
     industries_buttons_grid = industries_buttons
                               .each_slice(2)
                               .map { |buttons_group| buttons_group }
 
-    done_button = [{ text: 'done', callback_data: 'apply_industry' }]
+    done_button_text = translation('apply_industry.buttons.done')
+    done_button = [{ text: done_button_text, callback_data: 'apply_industry' }]
 
     {
       inline_keyboard: [
@@ -174,12 +175,16 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def main_menu_buttons
-    t('.main_menu.buttons')
+    t('telegram_webhooks.main_menu.buttons')
+  end
+
+  def translation(path, params = {})
+    t("telegram_webhooks.#{path}", params)
   end
 
   def handle_update_settings
     @user.setting
-    respond_with :message, text: t('.inline_keyboard.prompt'), reply_markup: update_settings_keyboard_markup
+    respond_with :message, text: translation('settings_inline_keyboard.prompt'), reply_markup: update_settings_keyboard_markup
   end
 
   def invoke_action(action, *args)

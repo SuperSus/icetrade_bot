@@ -33,20 +33,25 @@ ru:
   telegram_webhooks:
     start:
       hi: 'Привет %{name}!'
-    keyboard:
-      main_menu:
-        prompt: Главное Меню
-        buttons:
-          settings: Настройки
-          start_search: Начать Поиск
-          stop_search: Остановить Поиск
-      inline_keyboard:
-        prompt: Выберите Опцию
-        choose_options:
-          change_keywords: Добавить ключевые слова
-          сhoose_industry: Выбрать Отрасли
-    callback_query:
-      change_keywords: |
-        Введите ключевые слова через запятую.
-        Текущие ключевые слова %{keywords}
-    apply_keywords: 'Новые ключевые слова: %{keywords}'
+    main_menu:
+      prompt: Главное Меню
+      buttons:
+        settings: Настройки
+        start_search: Начать Поиск
+        stop_search: Остановить Поиск
+    settings_inline_keyboard:
+      prompt: Выберите Опцию
+      choose_options:
+        change_keywords: Добавить ключевые слова
+        сhoose_industry: Выбрать Отрасли
+    change_keywords: |
+      Введите ключевые слова через запятую.
+      Текущие ключевые слова %{keywords}
+    apply_keywords:
+      done: 'Новые ключевые слова: %{keywords}'
+    choose_industry:
+      prompt: Выберите отрасли
+    apply_industry:
+      done: Отрасли выбраны
+      buttons:
+        done: Готово
