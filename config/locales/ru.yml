@@ -58,3 +58,4 @@ ru:
       done: '*Отрасли выбраны*'
       buttons:
         done: Готово
+    back_button: Назад
