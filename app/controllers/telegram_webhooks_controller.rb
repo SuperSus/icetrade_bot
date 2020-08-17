@@ -5,19 +5,19 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def start!(*)
     user = User.find_or_create_by(chat_id: chat['id'], name: chat['username'])
-    respond_with :message, text: translation('start.hi', name: user.name || '')
+    respond_with_markdown_meesage(text: translation('start.hi', name: user.name || ''))
   end
 
   def keyboard!(value = nil, *)
     save_context :keyboard!
     if value
       if value == main_menu_buttons[:settings]
-        respond_with :message, text: translation('settings_inline_keyboard.prompt'), reply_markup: update_settings_keyboard_markup
+        show_settings_menu
       else
-        # respond_with :message, text: t('.selected', value: value)
+        # respond_with_markdown_meesage(text: t('.selected', value: value))
       end
     else
-      respond_with :message, text: translation('main_menu.prompt'), reply_markup: main_keyboard_markup
+      respond_with_markdown_meesage(text: translation('main_menu.prompt'), reply_markup: main_keyboard_markup)
     end
   end
 
@@ -35,7 +35,15 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def change_keywords
     save_context :apply_keywords
-    respond_with :message, text: translation('change_keywords', keywords: @user.setting.pretty_keywords)
+    respond_with_markdown_meesage(
+      text: translation('change_keywords', keywords: @user.setting.pretty_keywords),
+      reply_markup: back_button_inline('show_settings_menu')
+    )
+  end
+
+  def show_settings_menu
+    save_context :keyboard!
+    respond_with_markdown_meesage(text: translation('settings_inline_keyboard.prompt'), reply_markup: update_settings_keyboard_markup)
   end
 
   def apply_keywords(*args)
@@ -44,11 +52,11 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     @user.save
 
     save_context :keyboard!
-    respond_with :message, text: translation('apply_keywords.done', keywords: @user.setting.pretty_keywords), reply_markup: main_keyboard_markup
+    respond_with_markdown_meesage(text: translation('apply_keywords.done', keywords: @user.setting.pretty_keywords), reply_markup: main_keyboard_markup)
   end
 
   def сhoose_industry
-    respond_with :message, text: translation('choose_industry.prompt'), reply_markup: choose_industry_keyboard_markup(slected_industries_ids)
+    respond_with_markdown_meesage(text: translation('choose_industry.prompt'), reply_markup: choose_industry_keyboard_markup(slected_industries_ids))
   end
 
   # methaprogrammig! define methods like choose_industry_1, choose_industry_2 for each industry
@@ -65,13 +73,17 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     destroy_industries_buttons_state
 
     save_context :keyboard!
-    respond_with :message, text: translation('apply_industry.done'), reply_markup: main_keyboard_markup
+    respond_with_markdown_meesage(text: translation('apply_industry.done'), reply_markup: main_keyboard_markup)
   end
 
   private
 
   def find_user
     @user = User.find_or_create_by(chat_id: chat['id'])
+  end
+
+  def respond_with_markdown_meesage(params={})
+    respond_with :message, params.merge(parse_mode: 'Markdown')
   end
 
   def main_keyboard_markup
@@ -84,12 +96,23 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     }
   end
 
+  def back_button_inline(callback_data = 'keyboard!')
+    { inline_keyboard: [back_button(callback_data)] }
+  end
+
+  def back_button(callback_data = 'keyboard!')
+    [{ text: translation('back_button'), callback_data: callback_data }]
+  end
+
   def update_settings_keyboard_markup
     options = translation('settings_inline_keyboard.choose_options')
+    edit_icon = "\xE2\x9C\x8F"
+    industry_icon = "\xF0\x9F\x92\xBC"
     {
       inline_keyboard: [
-        [{ text: options[:change_keywords], callback_data: 'change_keywords' }],
-        [{ text: options[:сhoose_industry], callback_data: 'сhoose_industry' }]
+        [{ text: "#{options[:change_keywords]}  #{edit_icon}", callback_data: 'change_keywords' }],
+        [{ text: "#{options[:сhoose_industry]}  #{industry_icon}", callback_data: 'сhoose_industry' }],
+        back_button('keyboard!')
       ]
     }
   end
@@ -111,7 +134,8 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     {
       inline_keyboard: [
         *industries_buttons_grid,
-        done_button
+        done_button,
+        back_button('show_settings_menu')
       ]
     }
   end
@@ -122,10 +146,6 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def translation(path, params = {})
     t("telegram_webhooks.#{path}", params)
-  end
-
-  def handle_update_settings
-    respond_with :message, text: translation('settings_inline_keyboard.prompt'), reply_markup: update_settings_keyboard_markup
   end
 
   def invoke_action(action, *args)
