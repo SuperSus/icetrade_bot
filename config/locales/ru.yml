@@ -42,13 +42,16 @@ ru:
     settings_inline_keyboard:
       prompt: Выберите Опцию
       choose_options:
-        change_keywords: Добавить ключевые слова
+        change_keywords: Изменить ключевые слова
         сhoose_industry: Выбрать Отрасли
     change_keywords: |
       Введите ключевые слова через запятую.
-      Текущие ключевые слова %{keywords}
+      Текущие ключевые слова:
+      %{keywords}
     apply_keywords:
-      done: 'Новые ключевые слова: %{keywords}'
+      done: |
+        Новые ключевые слова:
+        %{keywords}
     choose_industry:
       prompt: Выберите отрасли
     apply_industry:

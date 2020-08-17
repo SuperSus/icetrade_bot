@@ -24,4 +24,8 @@ class Setting < ApplicationRecord
     self.filters = f
     save!
   end
+
+  def pretty_keywords
+    keywords.join(", ")
+  end
 end

@@ -1,52 +1,6 @@
 class TelegramWebhooksController < Telegram::Bot::UpdatesController
   include Telegram::Bot::UpdatesController::MessageContext
 
-  INDUSTRIES = [
-    'Авиация',
-    'Аукционы',
-    'Банки',
-    'Безопасность',
-    'Бизнес / финансы / страхование',
-    'Ветеринария',
-    'Геодезия / картография',
-    'Геология / сейсмология',
-    'Горнорудная промышленность',
-    'Железная дорога',
-    'ЖКХ / бытовое обслуживание',
-    'Информационные технологии',
-    'Компьютеры / оборудование',
-    'Культура',
-    'Легкая промышленность',
-    'Лесное хозяйство / деревообрабатывающая промышленность',
-    'Маркетинг / реклама',
-    'Машиностроение',
-    'Медицина',
-    'Металлы / металлоизделия',
-    'Недвижимость',
-    'Образование / наука',
-    'Офис / дом',
-    'Перевозки / логистика / таможня',
-    'Полиграфическая / издательская деятельность',
-    'Продовольствие / пищевая промышленность',
-    'Проектирование',
-    'Связь / коммуникации',
-    'Сельское хозяйство',
-    'Строительство / архитектура',
-    'Сырье / материалы',
-    'Тарное хозяйство',
-    'Топливо / нефтехимия',
-    'Торговля',
-    'Транспорт',
-    'Туризм / отдых / спорт',
-    'Фармакология',
-    'Химия',
-    'Целлюлозно-бумажное производство',
-    'Экология',
-    'Электроника / бытовая техника',
-    'Электротехника',
-    'Энергетика'
-  ].freeze
-
   before_action :find_user
 
   def start!(*)
@@ -55,6 +9,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def keyboard!(value = nil, *)
+    save_context :keyboard!
     if value
       if value == main_menu_buttons[:settings]
         respond_with :message, text: translation('settings_inline_keyboard.prompt'), reply_markup: update_settings_keyboard_markup
@@ -62,7 +17,6 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
         # respond_with :message, text: t('.selected', value: value)
       end
     else
-      save_context :keyboard!
       respond_with :message, text: translation('main_menu.prompt'), reply_markup: main_keyboard_markup
     end
   end
@@ -81,23 +35,24 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def change_keywords
     save_context :apply_keywords
-    respond_with :message, text: translation('change_keywords', keywords: @user.setting.keywords)
+    respond_with :message, text: translation('change_keywords', keywords: @user.setting.pretty_keywords)
   end
 
   def apply_keywords(*args)
-    keywords = args.join.split(/[,\.\s]+/)
+    keywords = args.join(', ').split(/[,\.\s]+/)
     @user.setting.keywords = keywords
     @user.save
 
-    save_context nil
-    respond_with :message, text: translation('apply_keywords.done', keywords: @user.setting.keywords)
+    save_context :keyboard!
+    respond_with :message, text: translation('apply_keywords.done', keywords: @user.setting.pretty_keywords), reply_markup: main_keyboard_markup
   end
 
-  def сhoose_industry(*_params)
+  def сhoose_industry
     respond_with :message, text: translation('choose_industry.prompt'), reply_markup: choose_industry_keyboard_markup(slected_industries_ids)
   end
 
-  INDUSTRIES.each_with_index do |_indusry, id|
+  # methaprogrammig! define methods like choose_industry_1, choose_industry_2 for each industry
+  Industry::INDUSTRIES.each_with_index do |_indusry, id|
     define_method("choose_industry_#{id}") do
       industries_buttons_state[id] = !industries_buttons_state[id]
       edit_message :reply_markup, reply_markup: choose_industry_keyboard_markup(slected_industries_ids)
@@ -105,10 +60,11 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def apply_industry
-    industries = INDUSTRIES.values_at(*slected_industries_ids)
+    industries = Industry::INDUSTRIES.values_at(*slected_industries_ids)
     @user.setting.add_industries!(industries)
     destroy_industries_buttons_state
 
+    save_context :keyboard!
     respond_with :message, text: translation('apply_industry.done'), reply_markup: main_keyboard_markup
   end
 
@@ -139,7 +95,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def choose_industry_keyboard_markup(selected_ids = [])
-    industries_buttons = INDUSTRIES.each_with_index.map do |name, id|
+    industries_buttons = Industry::INDUSTRIES.each_with_index.map do |name, id|
       check_icon = "\xE2\x9C\x85"
       selected = selected_ids.include?(id)
       { text: selected ? "#{check_icon} #{name}" : name, callback_data: "choose_industry_#{id}" }
@@ -179,7 +135,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   def industries_buttons_state
     session[:choose_industry_buttons_state] ||= begin
       @user.setting.industries
-           .map { |industry| INDUSTRIES.index(industry) }
+           .map { |industry| Industry::INDUSTRIES.index(industry) }
            .compact
            .map { |id| [id, true] }
            .to_h
