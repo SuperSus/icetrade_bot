@@ -4,9 +4,7 @@ class Setting < ApplicationRecord
   belongs_to :user
 
   def filtered_tenders
-    return Tender.all unless keywords.any?
-
-    Tender.search_any_word(keywords.join(' '))
+    Tender.by_industries(industries).search_any_word(keywords.join(' '))
   end
 
   def industries
