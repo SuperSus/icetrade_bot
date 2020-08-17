@@ -4,20 +4,15 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   before_action :find_user
 
   def start!(*)
-    user = User.find_or_create_by(chat_id: chat['id'], name: chat['username'])
-    respond_with_markdown_meesage(text: translation('start.hi', name: user.name || ''))
+    show_main_menu
   end
 
   def keyboard!(value = nil, *)
     save_context :keyboard!
     if value
-      if value == main_menu_buttons[:settings]
-        show_settings_menu
-      else
-        # respond_with_markdown_meesage(text: t('.selected', value: value))
-      end
+      show_settings_menu if value == main_menu_buttons[:settings]
     else
-      respond_with_markdown_meesage(text: translation('main_menu.prompt'), reply_markup: main_keyboard_markup)
+      show_main_menu
     end
   end
 
@@ -39,6 +34,11 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       text: translation('change_keywords', keywords: @user.setting.pretty_keywords),
       reply_markup: back_button_inline('show_settings_menu')
     )
+  end
+
+  def show_main_menu
+    save_context :keyboard!
+    respond_with_markdown_meesage(text: translation('main_menu.prompt'), reply_markup: main_keyboard_markup)
   end
 
   def show_settings_menu
