@@ -48,8 +48,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def apply_keywords(*args)
     keywords = args.join(', ').split(/[,\.\s]+/)
-    @user.setting.keywords = keywords
-    @user.save
+    @user.setting.update(keywords: keywords)
 
     save_context :keyboard!
     respond_with_markdown_meesage(text: translation('apply_keywords.done', keywords: @user.setting.pretty_keywords), reply_markup: main_keyboard_markup)

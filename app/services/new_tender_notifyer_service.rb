@@ -6,6 +6,8 @@ class NewTenderNotifyerService
   def call
     Setting.includes(:user).find_each do |setting|
       last_tenders = last_tenders(setting).load
+      next unless last_tenders.present?
+
       latest_tender_id = last_tenders.first.id
       next if latest_tender_id == setting.last_sended_tender_id
 

@@ -25,7 +25,7 @@ class Tender < ApplicationRecord
   scope :fields_ilike, lambda { |key, query_values|
     # surround by % to find all records
     # that include at least one occurrence of the given values
-    values = query_values.map { |value| "%#{value}%" }
+    values = query_values&.map { |value| "%#{value}%" }
     by_fields_template(key, values, FIELDS_ILIKE_TEMPLATE)
   }
 
