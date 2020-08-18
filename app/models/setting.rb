@@ -4,7 +4,7 @@ class Setting < ApplicationRecord
   belongs_to :user
 
   def filtered_tenders
-    Tender.by_industries(industries).search_any_word(keywords.join(' '))
+    Tender.by_industries(industries).by_keywords(keywords)
   end
 
   def industries

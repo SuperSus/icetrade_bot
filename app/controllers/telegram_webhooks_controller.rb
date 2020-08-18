@@ -20,7 +20,9 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     binding.pry
   end
 
-  def message(message); end
+  def message(message)
+    show_settings_menu if message["text"] == main_menu_buttons[:settings]
+  end
 
   def callback_query(action)
     invoke_action(action)
