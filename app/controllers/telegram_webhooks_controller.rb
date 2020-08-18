@@ -10,7 +10,9 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   def keyboard!(value = nil, *)
     save_context :keyboard!
     if value
-      show_settings_menu if value == main_menu_buttons[:settings]
+      show_settings_menu if main_menu_buttons[:settings].include?(value)
+      activate_search if main_menu_buttons[:start_search].include?(value)
+      deactivate_search if main_menu_buttons[:stop_search].include?(value)
     else
       show_main_menu
     end
@@ -30,6 +32,16 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   # Actions
 
+  def activate_search
+    @user.setting.activate!
+    show_main_menu(translation('was_activated'))
+  end
+
+  def deactivate_search
+    @user.setting.deactivate!
+    show_main_menu(translation('was_deactivated'))
+  end
+
   def change_keywords
     save_context :apply_keywords
     respond_with_markdown_meesage(
@@ -38,9 +50,9 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     )
   end
 
-  def show_main_menu
+  def show_main_menu(text = translation('main_menu.prompt'))
     save_context :keyboard!
-    respond_with_markdown_meesage(text: translation('main_menu.prompt'), reply_markup: main_keyboard_markup)
+    respond_with_markdown_meesage(text: text, reply_markup: main_keyboard_markup)
   end
 
   def show_settings_menu
@@ -88,7 +100,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def main_keyboard_markup
-    buttons = main_menu_buttons.values_at(:settings, :start_search)
+    buttons = main_menu_buttons.values_at(:settings, @user.setting.active? ? :stop_search : :start_search)
     {
       keyboard: [buttons],
       resize_keyboard: true,

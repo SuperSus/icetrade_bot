@@ -3,6 +3,8 @@
 class Setting < ApplicationRecord
   belongs_to :user
 
+  scope :active, -> { where(active: true) }
+
   def filtered_tenders
     Tender.by_industries(industries).by_keywords(keywords)
   end
@@ -10,6 +12,15 @@ class Setting < ApplicationRecord
   def industries
     f = filters || {}
     f['industries']
+  end
+
+  # only users with active settings will be notifyed
+  def activate!
+    update(active: true)
+  end
+
+  def deactivate!
+    update(active: false)
   end
 
   def add_industries!(industries)
