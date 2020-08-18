@@ -6,16 +6,18 @@ class NewTenderNotifyerService
   def call
     Setting.includes(:user).find_each do |setting|
       last_tenders = last_tenders(setting).load
-      latest_tender_id = last_tenders.first.id
-      next if latest_tender_id == setting.last_sended_tender_id
+      next unless last_tenders.present?
 
-      last_tenders.each do |tender|
+      not_sended_tenders = last_tenders.select { |tender| tender.id > setting.last_sended_tender_id }
+      next if not_sended_tenders.blank?
+
+      not_sended_tenders.each do |tender|
         msg = prepare_msg(tender)
 
         send_message(setting.user.chat_id, msg)
       end
 
-      setting.update(last_sended_tender_id: latest_tender_id)
+      setting.update(last_sended_tender_id: not_sended_tenders.first.id)
     end
   end
 
