@@ -4,7 +4,7 @@ class NewTenderNotifyerService
   LIMIT_TENDERS_TO_SEND = 5
 
   def call
-    Setting.includes(:user).find_each do |setting|
+    Setting.active.includes(:user).find_each do |setting|
       last_tenders = last_tenders(setting).load
       next unless last_tenders.present?
 
