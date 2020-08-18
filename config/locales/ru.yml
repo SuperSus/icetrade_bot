@@ -59,3 +59,5 @@ ru:
       buttons:
         done: Готово
     back_button: Назад
+    was_activated: Поиск начат
+    was_deactivated: Поиск завершен
