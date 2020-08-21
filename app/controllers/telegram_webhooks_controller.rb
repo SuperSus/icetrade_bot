@@ -1,6 +1,15 @@
 class TelegramWebhooksController < Telegram::Bot::UpdatesController
   include Telegram::Bot::UpdatesController::MessageContext
 
+  ICONS = {
+    cross: "\xE2\x9D\x8C",
+    edit: "\xE2\x9C\x8F",
+    industry: "\xF0\x9F\x92\xBC",
+    check: "\xE2\x9C\x85",
+    cross: "\xE2\x9D\x8C",
+    rocket: "\xF0\x9F\x9A\x80",
+  }.freeze
+
   before_action :find_user
 
   def start!(*)
@@ -8,7 +17,6 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def keyboard!(value = nil, *)
-    save_context :keyboard!
     if value
       show_settings_menu if main_menu_buttons[:settings].include?(value)
       activate_search if main_menu_buttons[:start_search].include?(value)
@@ -23,7 +31,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def message(message)
-    show_settings_menu if message["text"] == main_menu_buttons[:settings]
+    show_main_menu
   end
 
   def callback_query(action)
@@ -80,6 +88,14 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     end
   end
 
+  # reset all selected industries
+  def reset_industry
+    @user.setting.reset_industries!
+
+    save_context :keyboard!
+    respond_with_markdown_meesage(text: translation('reset_industry.done'), reply_markup: main_keyboard_markup)
+  end
+
   def apply_industry
     industries = Industry::INDUSTRIES.values_at(*slected_industries_ids)
     @user.setting.add_industries!(industries)
@@ -119,12 +135,10 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def update_settings_keyboard_markup
     options = translation('settings_inline_keyboard.choose_options')
-    edit_icon = "\xE2\x9C\x8F"
-    industry_icon = "\xF0\x9F\x92\xBC"
     {
       inline_keyboard: [
-        [{ text: "#{options[:change_keywords]}  #{edit_icon}", callback_data: 'change_keywords' }],
-        [{ text: "#{options[:сhoose_industry]}  #{industry_icon}", callback_data: 'сhoose_industry' }],
+        [{ text: "#{options[:change_keywords]}  #{ICONS[:edit]}", callback_data: 'change_keywords' }],
+        [{ text: "#{options[:сhoose_industry]}  #{ICONS[:industry]}", callback_data: 'сhoose_industry' }],
         back_button('keyboard!')
       ]
     }
@@ -132,22 +146,25 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def choose_industry_keyboard_markup(selected_ids = [])
     industries_buttons = Industry::INDUSTRIES.each_with_index.map do |name, id|
-      check_icon = "\xE2\x9C\x85"
       selected = selected_ids.include?(id)
-      { text: selected ? "#{check_icon} #{name}" : name, callback_data: "choose_industry_#{id}" }
+      { text: selected ? "#{ICONS[:check]} #{name}" : name, callback_data: "choose_industry_#{id}" }
     end
 
     industries_buttons_grid = industries_buttons
                               .each_slice(2)
                               .map { |buttons_group| buttons_group }
 
-    done_button_text = translation('apply_industry.buttons.done')
+    done_button_text = "#{translation('apply_industry.buttons.done')} #{ICONS[:rocket]}"
     done_button = [{ text: done_button_text, callback_data: 'apply_industry' }]
+
+    reset_button_text = "#{translation('reset_industry.buttons.done')} #{ICONS[:cross]}"
+    reset_button = [{ text: reset_button_text, callback_data: 'reset_industry' }]
 
     {
       inline_keyboard: [
         *industries_buttons_grid,
         done_button,
+        reset_button,
         back_button('show_settings_menu')
       ]
     }

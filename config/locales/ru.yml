@@ -58,6 +58,10 @@ ru:
       done: '*Отрасли выбраны*'
       buttons:
         done: Готово
+    reset_industry:
+      done: '*Все отрасли сброшены:* теперь бот будет искать по всем отраслям'
+      buttons:
+        done: Сбросить все отрасли
     back_button: Назад
     was_activated: Поиск начат
     was_deactivated: Поиск завершен
