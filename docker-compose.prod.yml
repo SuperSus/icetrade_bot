@@ -4,7 +4,7 @@ services:
     build:
       context: .
     image: "icetrade-bot"
-    command: /bin/bash -c "bin/rails telegram:bot:poller && bin/delayed_job start && bin/delayed_job start"
+    command: /bin/bash -c "bin/rails telegram:bot:poller && bin/delayed_job start"
     env_file: .env
     environment:
       RAILS_ENV: production

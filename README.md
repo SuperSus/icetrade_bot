@@ -25,6 +25,7 @@ docker-machine create --driver=digitalocean --digitalocean-access-token=DO_ACCES
 eval $(docker-machine env ice-trade)
 
 dc -f docker-compose.prod.yml build
-dc -f docker-compose.prod.yml up
+dc -f docker-compose.prod.yml up -d
 dc -f docker-compose.prod.yml exec web rails db:migrate
+dc -f docker-compose.prod.yml exec web bin/delayed_job start
 * ...
