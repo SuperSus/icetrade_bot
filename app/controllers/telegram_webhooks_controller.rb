@@ -8,6 +8,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     check: "\xE2\x9C\x85",
     cross: "\xE2\x9D\x8C",
     rocket: "\xF0\x9F\x9A\x80",
+    back_arrow: "\xE2\x86\xA9",
   }.freeze
 
   before_action :find_user
@@ -54,7 +55,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     save_context :apply_keywords
     respond_with_markdown_meesage(
       text: translation('change_keywords', keywords: @user.setting.pretty_keywords),
-      reply_markup: back_button_inline('show_settings_menu')
+      reply_markup: change_keywords_keyboard_markup
     )
   end
 
@@ -74,6 +75,11 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
     save_context :keyboard!
     respond_with_markdown_meesage(text: translation('apply_keywords.done', keywords: @user.setting.pretty_keywords), reply_markup: main_keyboard_markup)
+  end
+
+  def reset_keywords
+    save_context :keyboard!
+    respond_with_markdown_meesage(text: translation('reset_keywords.done'), reply_markup: main_keyboard_markup)
   end
 
   def сhoose_industry
@@ -130,7 +136,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def back_button(callback_data = 'keyboard!')
-    [{ text: translation('back_button'), callback_data: callback_data }]
+    [{ text: "#{translation('back_button')}  #{ICONS[:back_arrow]}", callback_data: callback_data }]
   end
 
   def update_settings_keyboard_markup
@@ -140,6 +146,16 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
         [{ text: "#{options[:change_keywords]}  #{ICONS[:edit]}", callback_data: 'change_keywords' }],
         [{ text: "#{options[:сhoose_industry]}  #{ICONS[:industry]}", callback_data: 'сhoose_industry' }],
         back_button('keyboard!')
+      ]
+    }
+  end
+
+  def change_keywords_keyboard_markup
+    reset_button_text = "#{translation('reset_keywords.buttons.done')}  #{ICONS[:cross]}"
+    reset_button = [{ text: reset_button_text, callback_data: 'reset_keywords' }]
+    { inline_keyboard: [
+        reset_button,
+        back_button('show_settings_menu'),
       ]
     }
   end
@@ -154,10 +170,10 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
                               .each_slice(2)
                               .map { |buttons_group| buttons_group }
 
-    done_button_text = "#{translation('apply_industry.buttons.done')} #{ICONS[:rocket]}"
+    done_button_text = "#{translation('apply_industry.buttons.done')}  #{ICONS[:rocket]}"
     done_button = [{ text: done_button_text, callback_data: 'apply_industry' }]
 
-    reset_button_text = "#{translation('reset_industry.buttons.done')} #{ICONS[:cross]}"
+    reset_button_text = "#{translation('reset_industry.buttons.done')}  #{ICONS[:cross]}"
     reset_button = [{ text: reset_button_text, callback_data: 'reset_industry' }]
 
     {

@@ -52,6 +52,10 @@ ru:
       done: |
         *Новые ключевые слова:*
         %{keywords}
+    reset_keywords:
+      done: '*Ключевые слова сброшены*: теперь бот не учитывает ключевые слова при поиске'
+      buttons:
+        done: Сбросить ключевые слова
     choose_industry:
       prompt: '*Выберите отрасли*'
     apply_industry:
