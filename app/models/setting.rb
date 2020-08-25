@@ -11,7 +11,7 @@ class Setting < ApplicationRecord
 
   def industries
     f = filters || {}
-    f['industries']
+    f['industries'] ||= []
   end
 
   # only users with active settings will be notifyed
@@ -25,6 +25,19 @@ class Setting < ApplicationRecord
 
   def add_industries!(industries)
     add_filter!('industries', industries)
+  end
+
+  def reset_industries!
+    add_filter!('industries', [])
+  end
+
+  def add_keywords!(raw_keywords)
+    new_keywords = raw_keywords.join(', ').split(/[,\.\s]+/)
+    update(keywords: new_keywords)
+  end
+
+  def reset_keywords!
+    update(keywords: [])
   end
 
   def add_filter!(key, value)
