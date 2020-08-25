@@ -16,3 +16,5 @@ COPY Gemfile .
 COPY Gemfile.lock .
 
 RUN bundle install --jobs 5
+
+COPY . .

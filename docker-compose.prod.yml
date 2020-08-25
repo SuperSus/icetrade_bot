@@ -1,0 +1,23 @@
+version: '3'
+services:
+  web:
+    build:
+      context: .
+    image: "icetrade-bot"
+    command: /bin/bash -c "bin/rails telegram:bot:poller && bin/delayed_job start && bin/delayed_job start"
+    env_file: .env
+    environment:
+      RAILS_ENV: production
+    restart: always
+    depends_on:
+      - db
+    tty: true
+    stdin_open: true
+
+  db:
+    image: postgres:11.7-alpine
+    env_file: .env
+    ports:
+      - 5432:5432
+    volumes:
+      - ./tmp/postgres_data:/var/lib/postgresql/data

@@ -85,5 +85,5 @@ test:
 production:
   <<: *default
   database: icetrade_bot_production
-  username: icetrade_bot
-  password: <%= ENV['ICETRADE_BOT_DATABASE_PASSWORD'] %>
+  # username: icetrade_bot
+  # password: <%= ENV['ICETRADE_BOT_DATABASE_PASSWORD'] %>
