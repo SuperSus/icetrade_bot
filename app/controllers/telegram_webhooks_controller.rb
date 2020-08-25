@@ -28,7 +28,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def hhh!(*)
-    binding.pry
+    binding.pry if Rails.env.development?
   end
 
   def message(message)
@@ -116,6 +116,9 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def find_user
     @user = User.find_or_create_by(chat_id: chat['id'])
+    # temporarry will be replaced with
+    # @user = User.find_or_create_by(chat_id: chat['id'], name: chat['username'])
+    @user.update(name: chat['username']) unless @user.name.present?
   end
 
   def respond_with_markdown_meesage(params={})
