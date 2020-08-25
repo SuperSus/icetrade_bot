@@ -31,6 +31,15 @@ class Setting < ApplicationRecord
     add_filter!('industries', [])
   end
 
+  def add_keywords!(raw_keywords)
+    new_keywords = raw_keywords.join(', ').split(/[,\.\s]+/)
+    update(keywords: new_keywords)
+  end
+
+  def reset_keywords!
+    update(keywords: [])
+  end
+
   def add_filter!(key, value)
     f = filters || {}
     f[key] = value
