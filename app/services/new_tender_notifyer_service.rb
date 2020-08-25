@@ -8,7 +8,12 @@ class NewTenderNotifyerService
       last_tenders = last_tenders(setting).load
       next unless last_tenders.present?
 
-      not_sended_tenders = last_tenders.select { |tender| tender.id > setting.last_sended_tender_id }
+      if setting.last_sended_tender_id
+        not_sended_tenders = last_tenders.select { |tender| tender.id > setting.last_sended_tender_id }
+      else
+        not_sended_tenders = last_tenders
+      end
+
       next if not_sended_tenders.blank?
 
       not_sended_tenders.each do |tender|
