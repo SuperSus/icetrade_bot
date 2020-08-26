@@ -1,11 +1,23 @@
 version: '3'
 services:
+  https-portal:
+    image: steveltn/https-portal
+    ports:
+      - 80:80
+      - 443:443
+    links:
+      - web
+    environment:
+      - "DOMAINS=icetradebot.tk -> http://web:3000"
   web:
     build:
       context: .
     image: "icetrade-bot"
-    command: /bin/bash -c "bin/rails telegram:bot:poller && bin/delayed_job start"
+    # command: /bin/bash -c "bin/rails telegram:bot:poller && bin/delayed_job start"
+    command: /bin/bash -c "rm -f /tmp/server.pid && bundle exec rails server -b 0.0.0.0 -P /tmp/server.pid && bin/delayed_job start"
     env_file: .env
+    ports:
+      - 3000:3000
     environment:
       RAILS_ENV: production
     restart: always
