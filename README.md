@@ -28,4 +28,15 @@ dc -f docker-compose.prod.yml build
 dc -f docker-compose.prod.yml up -d
 dc -f docker-compose.prod.yml exec web rails db:migrate
 dc -f docker-compose.prod.yml exec web bin/delayed_job start
+dc -f docker-compose.prod.yml exec web rake telegram:bot:set_webhook
+
+* webhooks setup
+https://core.telegram.org/bots/webhooks
+https://github.com/steveltn/https-portal
+```ruby
+url = "https://icetradebot.tk/telegram/TOKEN"
+Telegram.bot.set_webhook(url: url)
+Telegram.bot.delete_webhook
+Telegram.bot.get_webhook_info
+```
 * ...
