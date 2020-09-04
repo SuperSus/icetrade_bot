@@ -18,7 +18,8 @@ class Subscription < ApplicationRecord
     free_tier: 10.days,
     month: 1.month,
     three_month: 3.month
-  }.freeze
+  }.with_indifferent_access
+   .freeze
 
   class << self
     def build_with_free_tier(user_id)
@@ -32,7 +33,7 @@ class Subscription < ApplicationRecord
   def renew!
     Subscription.transaction do
       payments.not_used.each do |payment|
-        update_payed_for!(PERIODS[payment.subcription_type])
+        update_payed_for!(PERIODS[payment.subscription_type.to_sym])
         payment.use!
       end
     end
@@ -42,11 +43,11 @@ class Subscription < ApplicationRecord
 
   def update_payed_for!(period)
     now = DateTime.now
-    if payed_for
-      start_time = payed_for > now ? payed_for : now
-    else
-      start_time = now 
-    end
+    start_time = if payed_for
+                   payed_for > now ? payed_for : now
+                 else
+                   now
+                 end
     new_payed_for = start_time + period
 
     update(payed_for: new_payed_for)
