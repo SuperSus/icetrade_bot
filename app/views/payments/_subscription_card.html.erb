@@ -1,0 +1,10 @@
+<div class="card">
+  <div class="card-header">
+    <%= header %>
+  </div>
+  <div class="card-body">
+    <h5 class="card-title"><%= descr %></h5>
+    <p class="card-text"><%= cost %> &#8381;</p>
+    <%= render('modal_form', cost: cost, id: id) %>  
+  </div>
+</div>
