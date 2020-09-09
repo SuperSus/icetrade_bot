@@ -1,10 +1,10 @@
-<div class="card">
+<div class="card" style="margin-bottom:15px; font-size:1.2rem">
   <div class="card-header">
-    <%= header %>
+    <%= subscription.header %>
   </div>
   <div class="card-body">
-    <h5 class="card-title"><%= descr %></h5>
-    <p class="card-text"><%= cost %> &#8381;</p>
-    <%= render('modal_form', cost: cost, id: id) %>  
+    <h5 class="card-title"> <%= subscription.description %></h5>
+    <p class="card-text"><%= subscription.cost %> &#8381;</p>
+    <%= render('modal_form', subscription: subscription, id: subscription.type) %>  
   </div>
 </div>

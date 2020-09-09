@@ -7,17 +7,20 @@ class Subscription < ApplicationRecord
   TYPES = %i[
     month
     three_month
+    six_month
   ].freeze
 
   COSTS = {
     month: 10,
-    three_month: 20
+    three_month: 20,
+    six_month: 30
   }.freeze
 
   PERIODS = {
     free_tier: 10.days,
     month: 1.month,
-    three_month: 3.month
+    three_month: 3.month,
+    six_month: 6.month
   }.with_indifferent_access
    .freeze
 
@@ -27,6 +30,14 @@ class Subscription < ApplicationRecord
         user_id: user_id,
         payed_for: DateTime.now + PERIODS[:free_tier]
       )
+    end
+
+    def plans
+      TYPES.map do |type|
+        I18n.t(type, scope: 'subscriptions')
+          .merge(cost: COSTS[type])
+          .merge(type: type)
+      end
     end
   end
 
