@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_08_18_190959) do
+ActiveRecord::Schema.define(version: 2020_09_03_122438) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -31,6 +31,18 @@ ActiveRecord::Schema.define(version: 2020_08_18_190959) do
     t.index ["priority", "run_at"], name: "delayed_jobs_priority"
   end
 
+  create_table "payments", force: :cascade do |t|
+    t.bigint "subscription_id"
+    t.boolean "used", default: false
+    t.boolean "accepted"
+    t.decimal "amount"
+    t.string "subscription_type"
+    t.jsonb "parameters"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["subscription_id"], name: "index_payments_on_subscription_id"
+  end
+
   create_table "settings", force: :cascade do |t|
     t.bigint "user_id"
     t.jsonb "filters"
@@ -40,6 +52,14 @@ ActiveRecord::Schema.define(version: 2020_08_18_190959) do
     t.datetime "updated_at", null: false
     t.boolean "active", default: false
     t.index ["user_id"], name: "index_settings_on_user_id"
+  end
+
+  create_table "subscriptions", force: :cascade do |t|
+    t.bigint "user_id"
+    t.datetime "payed_for"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_subscriptions_on_user_id"
   end
 
   create_table "tenders", force: :cascade do |t|
@@ -58,4 +78,6 @@ ActiveRecord::Schema.define(version: 2020_08_18_190959) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "payments", "subscriptions"
+  add_foreign_key "subscriptions", "users"
 end

@@ -39,6 +39,8 @@ ru:
         settings: Настройки
         start_search: Начать Поиск
         stop_search: Остановить Поиск
+        instruction: Инструкция
+        buy_subscription: Купить Подписку
     settings_inline_keyboard:
       prompt: '*Выберите Опцию*'
       choose_options:
@@ -66,6 +68,9 @@ ru:
       done: '*Все отрасли сброшены:* теперь бот будет искать по всем отраслям'
       buttons:
         done: Сбросить все отрасли
+    buy:
+      prompt: Текущая подписка действует до %{date}
+      buy_button: Продлить
     back_button: Назад
     was_activated: Поиск начат
     was_deactivated: Поиск завершен
