@@ -6,9 +6,14 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     edit: "\xE2\x9C\x8F",
     industry: "\xF0\x9F\x92\xBC",
     check: "\xE2\x9C\x85",
-    cross: "\xE2\x9D\x8C",
     rocket: "\xF0\x9F\x9A\x80",
     back_arrow: "\xE2\x86\xA9",
+    credit_card: "\xF0\x9F\x92\xB3",
+    instruction: "\xF0\x9F\x93\x96",
+    search: "\xF0\x9F\x94\x8D",
+    settings: "\xF0\x9F\x94\xA7",
+    stop_search: "\xE2\x9B\x94",
+    link_arrow: "\xE2\x86\x97"
   }.freeze
 
   before_action :find_user
@@ -22,6 +27,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       show_settings_menu if main_menu_buttons[:settings].include?(value)
       activate_search if main_menu_buttons[:start_search].include?(value)
       deactivate_search if main_menu_buttons[:stop_search].include?(value)
+      buy_subscription if main_menu_buttons[:buy_subscription].include?(value)
     else
       show_main_menu
     end
@@ -31,7 +37,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     binding.pry if Rails.env.development?
   end
 
-  def message(message)
+  def message(_message)
     show_main_menu
   end
 
@@ -49,6 +55,11 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   def deactivate_search
     @user.setting.deactivate!
     show_main_menu(translation('was_deactivated'))
+  end
+
+  def buy_subscription
+    save_context :keyboard!
+    respond_with_markdown_meesage(text: translation('buy.prompt', date: @user.subscription.payed_for.strftime("%d.%m.%Y")), reply_markup: buy_subscription_keyboard_markup)
   end
 
   def change_keywords
@@ -121,14 +132,31 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     @user.update(name: chat['username']) unless @user.name.present?
   end
 
-  def respond_with_markdown_meesage(params={})
+  def respond_with_markdown_meesage(params = {})
     respond_with :message, params.merge(parse_mode: 'Markdown')
   end
 
   def main_keyboard_markup
-    buttons = main_menu_buttons.values_at(:settings, @user.setting.active? ? :stop_search : :start_search)
+    # unstructured_buttons = main_menu_buttons.values_at(
+    #   :settings,
+    #   @user.setting.active? ? :stop_search : :start_search,
+    #   :instruction,
+    #   :buy_subscription
+    # )
+
+    # buttons = unstructured_buttons.each_slice(2).map { |group| group }
+    settings_button = "#{main_menu_buttons[:settings]} #{ICONS[:settings]}"
+    stop_start_button = if @user.setting.active?
+                          "#{main_menu_buttons[:stop_search]} #{ICONS[:stop_search]}"
+                        else
+                          "#{main_menu_buttons[:start_search]} #{ICONS[:search]}"
+                        end
+    instruction_button = "#{main_menu_buttons[:instruction]} #{ICONS[:instruction]}"
+    buy_subscription_button = "#{main_menu_buttons[:buy_subscription]} #{ICONS[:credit_card]}"
+
+    buttons = [[settings_button, stop_start_button], [instruction_button, buy_subscription_button]]
     {
-      keyboard: [buttons],
+      keyboard: buttons,
       resize_keyboard: true,
       one_time_keyboard: true,
       selective: true
@@ -154,14 +182,24 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     }
   end
 
+  def buy_subscription_keyboard_markup
+    host = '93bc39ba0341.ngrok'
+    url = URI::HTTPS.build(host: host, path: '/payments/new', query: "chat_id=#{@user.chat_id}")
+    {
+      inline_keyboard: [
+        [{ text: "#{translation('buy.buy_button')}  #{ICONS[:link_arrow]}", url: url }],
+        back_button('keyboard!')
+      ]
+    }
+  end
+
   def change_keywords_keyboard_markup
     reset_button_text = "#{translation('reset_keywords.buttons.done')}  #{ICONS[:cross]}"
     reset_button = [{ text: reset_button_text, callback_data: 'reset_keywords' }]
     { inline_keyboard: [
-        reset_button,
-        back_button('show_settings_menu'),
-      ]
-    }
+      reset_button,
+      back_button('show_settings_menu')
+    ] }
   end
 
   def choose_industry_keyboard_markup(selected_ids = [])
