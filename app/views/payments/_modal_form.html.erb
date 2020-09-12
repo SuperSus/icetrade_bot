@@ -16,7 +16,7 @@
       <!-- Form -->
       <form method="POST" action="https://money.yandex.ru/quickpay/confirm.xml">
         <div class="modal-body">
-          <input type="hidden" name="receiver" value="410014516606135" />
+          <input type="hidden" name="receiver" value="<%= Rails.application.secrets.wallet_id %>" />
           <input type="hidden" name="label" value="<%= subscription.label %>" />
           <input type="hidden" name="quickpay-form" value="donate" />
           <input type="hidden" name="targets" value="icetrade bot plan: <%= subscription.type %>" />

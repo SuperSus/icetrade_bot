@@ -137,14 +137,6 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def main_keyboard_markup
-    # unstructured_buttons = main_menu_buttons.values_at(
-    #   :settings,
-    #   @user.setting.active? ? :stop_search : :start_search,
-    #   :instruction,
-    #   :buy_subscription
-    # )
-
-    # buttons = unstructured_buttons.each_slice(2).map { |group| group }
     settings_button = "#{main_menu_buttons[:settings]} #{ICONS[:settings]}"
     stop_start_button = if @user.setting.active?
                           "#{main_menu_buttons[:stop_search]} #{ICONS[:stop_search]}"
@@ -183,7 +175,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def buy_subscription_keyboard_markup
-    host = '93bc39ba0341.ngrok'
+    host = '92e23290c625.ngrok.io'
     url = URI::HTTPS.build(host: host, path: '/payments/new', query: "chat_id=#{@user.chat_id}")
     {
       inline_keyboard: [
