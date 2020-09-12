@@ -40,9 +40,10 @@ class PaymentProcessor
     end
 
     Payment.transaction do
-      # binding.pry
       create_payment!
       renew_subcription!
+      send_message(chat_id, msg)
+      true
     end
   end
 
@@ -129,5 +130,18 @@ class PaymentProcessor
 
   def logger
     Rails.logger
+  end
+
+  def send_message(chat_id, msg)
+    return if Rails.env.test?
+    
+    Telegram.bot.send_message(chat_id: chat_id, text: msg, parse_mode: 'Markdown')
+  end
+
+  def msg
+    <<~MSG
+      *Спасибо #{user&.name || ""}!*
+      Подписка успешно продлена до #{subscription.payed_for.strftime("%d.%m.%Y")}
+    MSG
   end
 end
