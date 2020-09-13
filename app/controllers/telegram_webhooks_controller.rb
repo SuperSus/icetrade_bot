@@ -19,7 +19,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   before_action :find_user
 
   def start!(*)
-    show_main_menu
+    show_instruction
   end
 
   def keyboard!(value = nil, *)
@@ -28,6 +28,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       activate_search if main_menu_buttons[:start_search].include?(value)
       deactivate_search if main_menu_buttons[:stop_search].include?(value)
       buy_subscription if main_menu_buttons[:buy_subscription].include?(value)
+      show_instruction if main_menu_buttons[:instruction].include?(value)
     else
       show_main_menu
     end
@@ -81,6 +82,12 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   def show_settings_menu
     save_context :keyboard!
     respond_with_markdown_meesage(text: translation('settings_inline_keyboard.prompt'), reply_markup: update_settings_keyboard_markup)
+  end
+
+  def show_instruction
+    save_context :keyboard!
+    bot.send_message(chat_id: @user.chat_id, text: Message.instruction, parse_mode: 'HTML')
+    show_main_menu
   end
 
   def apply_keywords(*args)

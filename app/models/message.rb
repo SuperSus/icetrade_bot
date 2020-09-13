@@ -5,6 +5,12 @@ class Message
 
   validates :tender, presence: true
 
+  class << self
+    def instruction
+      I18n.t("instruction.main", point: "\xE2\x97\xBD")
+    end
+  end
+
   def to_s
     <<~MSG
       *#{tender.header}*
