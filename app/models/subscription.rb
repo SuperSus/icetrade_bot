@@ -24,6 +24,8 @@ class Subscription < ApplicationRecord
   }.with_indifferent_access
    .freeze
 
+  scope :active, -> { where(Subscription.arel_table[:payed_for].gt(DateTime.now)) }
+
   class << self
     def build_with_free_tier(user_id)
       new(
@@ -39,6 +41,10 @@ class Subscription < ApplicationRecord
           .merge(type: type)
       end
     end
+  end
+
+  def active?
+    payed_for >= DateTime.now 
   end
 
   def renew!

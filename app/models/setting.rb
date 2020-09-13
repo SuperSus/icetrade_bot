@@ -2,8 +2,9 @@
 
 class Setting < ApplicationRecord
   belongs_to :user
+  has_one :subscription, through: :user
 
-  scope :active, -> { where(active: true) }
+  scope :active, -> { joins(user: :subscription).merge(Subscription.active).where(active: true) }
 
   def filtered_tenders
     Tender.by_industries(industries).by_keywords(keywords)
@@ -15,7 +16,13 @@ class Setting < ApplicationRecord
   end
 
   # only users with active settings will be notifyed
+  def active?
+    active && subscription.active?
+  end
+
   def activate!
+    return false unless subscription.active?
+
     update(active: true)
   end
 

@@ -70,6 +70,7 @@ ru:
         done: Сбросить все отрасли
     buy:
       prompt: Текущая подписка действует до %{date}
+      need_subscription: Сперва нужно продлить подписку
       buy_button: Продлить
     back_button: Назад
     was_activated: Поиск начат

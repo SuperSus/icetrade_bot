@@ -48,8 +48,11 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   # Actions
 
   def activate_search
-    @user.setting.activate!
-    show_main_menu(translation('was_activated'))
+    if @user.setting.activate!
+      show_main_menu(translation('was_activated'))
+    else
+      respond_with_markdown_meesage(text: translation('buy.need_subscription'), reply_markup: buy_subscription_keyboard_markup)      
+    end
   end
 
   def deactivate_search
