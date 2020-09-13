@@ -185,7 +185,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def buy_subscription_keyboard_markup
-    host = '92e23290c625.ngrok.io'
+    host = Rails.env.production? ? 'icetradebot.tk' : '92e23290c625.ngrok.io'
     url = URI::HTTPS.build(host: host, path: '/payments/new', query: "chat_id=#{@user.chat_id}")
     {
       inline_keyboard: [
