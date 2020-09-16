@@ -17,7 +17,6 @@ services:
     build:
       context: .
     image: "icetrade-bot"
-    # command: /bin/bash -c "bin/rails telegram:bot:poller && bin/delayed_job start"
     command: /bin/bash -c "rm -f /tmp/server.pid && bundle exec rails server -b 0.0.0.0 -P /tmp/server.pid"
     env_file: .env
     environment:
@@ -27,6 +26,15 @@ services:
       - db
     tty: true
     stdin_open: true
+  poller:
+    image: "icetrade-bot"
+    command: /bin/bash -c "bin/delayed_job start && bin/rails telegram:bot:poller"
+    env_file: .env
+    environment:
+      RAILS_ENV: production
+    restart: always
+    depends_on:
+      - db
   db:
     image: postgres:11.7-alpine
     env_file: .env
