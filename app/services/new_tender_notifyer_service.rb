@@ -1,18 +1,15 @@
 # frozen_string_literal: true
 
 class NewTenderNotifyerService
-  LIMIT_TENDERS_TO_SEND = 5
+  LIMIT_TENDERS_TO_SEND = 10
 
   def call
     Setting.active.includes(:user).find_each do |setting|
       last_tenders = last_tenders(setting).load
       next unless last_tenders.present?
 
-      if setting.last_sended_tender_id
-        not_sended_tenders = last_tenders.select { |tender| tender.id > setting.last_sended_tender_id }
-      else
-        not_sended_tenders = last_tenders
-      end
+      last_sended_id = setting.last_sended_tender_id || 0
+      not_sended_tenders = last_tenders.select { |tender| tender.id > last_sended_id }
 
       next if not_sended_tenders.blank?
 
@@ -39,7 +36,7 @@ class NewTenderNotifyerService
   # latest fetched tenders the first is newest
   def last_tenders(setting)
     setting
-      .filtered_tenders.order(id: :desc)
+      .filtered_tenders.reorder(id: :desc)
       .limit(LIMIT_TENDERS_TO_SEND)
   end
 end
